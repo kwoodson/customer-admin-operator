@@ -1,0 +1,11 @@
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: customer-admin-operator
+subjects:
+- kind: ServiceAccount
+  name: customer-admin-operator
+roleRef:
+  kind: Role
+  name: customer-admin-operator
+  apiGroup: rbac.authorization.k8s.io
