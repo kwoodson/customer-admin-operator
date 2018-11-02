@@ -5,9 +5,8 @@ import (
 	"log"
 	"runtime"
 
-	"github.com/openshift/customer-admin-operator/pkg/apis"
-	"github.com/openshift/customer-admin-operator/pkg/controller"
-	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
+	"github.com/openshift/customer-admin-operator/pkg/controllernamespace"
+	"github.com/openshift/customer-admin-operator/pkg/controllerrolebinding"
 	sdkVersion "github.com/operator-framework/operator-sdk/version"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
@@ -25,11 +24,6 @@ func main() {
 	printVersion()
 	flag.Parse()
 
-	namespace, err := k8sutil.GetWatchNamespace()
-	if err != nil {
-		log.Fatalf("failed to get watch namespace: %v", err)
-	}
-
 	// TODO: Expose metrics port after SDK uses controller-runtime's dynamic client
 	// sdk.ExposeMetricsPort()
 
@@ -40,7 +34,7 @@ func main() {
 	}
 
 	// Create a new Cmd to provide shared dependencies and start components
-	mgr, err := manager.New(cfg, manager.Options{Namespace: namespace})
+	mgr, err := manager.New(cfg, manager.Options{})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -48,12 +42,16 @@ func main() {
 	log.Print("Registering Components.")
 
 	// Setup Scheme for all resources
-	if err := apis.AddToScheme(mgr.GetScheme()); err != nil {
+	// if err := apis.AddToScheme(mgr.GetScheme()); err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	// Setup all Controllers
+	if err := controllernamespace.AddToManager(mgr); err != nil {
 		log.Fatal(err)
 	}
 
-	// Setup all Controllers
-	if err := controller.AddToManager(mgr); err != nil {
+	if err := controllerrolebinding.AddToManager(mgr); err != nil {
 		log.Fatal(err)
 	}
 
